@@ -2,13 +2,13 @@
 
 An offline-first, Progressive Web App (PWA) communication board featuring local text-to-speech, dynamic word prediction, and highly accessible touch targets. 
 
-Designed specifically for the iPad, this application requires zero network connectivity once installed, prioritizing speed, reliability, and privacy.
+Designed specifically for tablets, this application requires zero network connectivity once installed, prioritizing speed, reliability, and privacy.
 
 ## Table of Contents
 - [Background & Inspiration](#background--inspiration)
 - [Features](#features)
 - [Methodology: Linked-Intent Development (LID)](#methodology-linked-intent-development-lid)
-- [Installation (iPad / iOS)](#installation-ipad--ios)
+- [Installation](#installation--cross-platform-support)
 - [Local Development & Testing](#local-development--testing)
 - [Architecture & Design Documents](#architecture--design-documents)
 
