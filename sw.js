@@ -37,11 +37,21 @@ self.addEventListener('activate', function (event) {
   );
 });
 
-// @spec [REQ-PWA-001] Fetch: Cache-First strategy
+// @spec [REQ-PWA-001] Fetch: Stale-While-Revalidate Strategy
 self.addEventListener('fetch', function (event) {
   event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      return cached || fetch(event.request);
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.match(event.request).then(function (cached) {
+        var fetched = fetch(event.request).then(function (networkResponse) {
+          if (networkResponse.status === 200) {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(function () {
+          // Fall back gracefully when offline
+        });
+        return cached || fetched;
+      });
     })
   );
 });

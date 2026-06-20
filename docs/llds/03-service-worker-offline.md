@@ -18,9 +18,9 @@ Define the configuration required to make the application installable as a stand
 * **Cache Name:** MUST establish a distinct cache version (e.g., `comm-board-v1`).
 * **Install Event:** (Satisfies [REQ-PWA-001]) Upon installation, the Service Worker MUST aggressively cache the core application shell: `index.html`, `manifest.json`, and the icon PNGs.
 * **Activate Event:** (Satisfies [REQ-PWA-001]) Upon activation, the Service Worker MUST delete any previous, outdated cache versions.
-* **Fetch Event (Cache-First Strategy):** (Satisfies [REQ-PWA-001]) For every network request, the Service Worker MUST intercept the request and respond with the cached file if it exists. It should only fall back to the network if the file is completely missing from the cache.
+* **Fetch Event (Stale-While-Revalidate Strategy):** (Satisfies [REQ-ACC-005]) The Service Worker MUST intercept every network request and serve the cached file immediately for instantaneous, offline-capable loading. Simultaneously, it MUST fetch the file from the network in the background to update the cache for the next load, ensuring users receive updates without requiring manual cache busting.
 
 ## 5. HTML Integration (`index.html`)
-* The `<head>` MUST contain a link to the manifest: `<link rel="manifest" href="manifest.json">`.
-* The `<head>` MUST contain the Apple-specific meta tag for the 180px icon: `<link rel="apple-touch-icon" href="icon-180.png">`.
+* The `<head>` MUST contain an explicit relative link to the manifest: `<link rel="manifest" href="./manifest.json">`.
+* The `<head>` MUST contain the Apple-specific meta tag for the icon using an explicit relative link: `<link rel="apple-touch-icon" href="./apple-touch-icon.png">`.
 * (Satisfies [REQ-PWA-001]) The bottom of the HTML file (inside the `<script>` block) MUST register the Service Worker if the browser supports it (`if ('serviceWorker' in navigator) { ... }`).

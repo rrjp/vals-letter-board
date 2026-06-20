@@ -18,11 +18,15 @@ Designed specifically for tablets, this application requires zero network connec
 
 ## Features
 
-* **100% Offline Execution:** Powered by a strict cache-first Service Worker, the board functions completely without Wi-Fi or cellular data after initial installation.
-* **Native Vocalization:** Utilizes the browser's native `window.speechSynthesis` API for instantaneous, on-device audio without external API latency.
+* **100% Offline Execution:** Powered by a robust **Stale-While-Revalidate Service Worker**, the board loads instantly and functions completely offline. Updates are silently fetched in the background and applied on subsequent reloads.
+* **Native Vocalization:** Utilizes the browser's native `window.speechSynthesis` API for instantaneous, on-device audio without external API latency. Includes deep defense-in-depth fixes to prevent the iOS Safari WebKit speech freezing bug.
+* **Offline Voice Suffix Markers:** Automatically identifies on-device vs. cloud-based voices (`localService`), appending `(offline)` or `(cloud)` to the dropdown options so users can easily select a voice that functions without an active internet connection.
 * **Dynamic Word Prediction:** A self-learning dictionary runs entirely in local memory (`localStorage`), predicting vocabulary based on frequency and usage to reduce keystrokes.
 * **Accessible Fluid UI:** Built with CSS Flexbox and Grid to completely eliminate dead whitespace. Features massive, mathematically sized touch targets (`8vh` minimum) and an elegant, offline-safe serif typography stack.
-* **Customization:** Includes persistent toggles for Light/Dark mode and Alphabetical/Staggered QWERTY layouts.
+* **Switch-Access & Keyboard Compatibility:** Includes high-contrast `:focus-visible` focus outlines (`4px solid #4dabf7`) to support users navigating via assistive hardware switch controllers, mouth-puff switches, or Bluetooth controllers. **Crucially**, it is designed to prevent mobile on-screen virtual keyboards from ever popping up and covering the board.
+* **Screen Reader Friendly:** Incorporates `role="status"` and `aria-live="polite"` tags so screen reader devices dynamically announce letters and words as they are typed.
+* **WCAG-Compliant Visual Contrast:** Features high-contrast typography and buttons exceeding WCAG 2.1 AA/AAA guidelines, including darker high-contrast styling for the Action Grid (Speak, Clear, and Backspace) across both Light and Dark themes.
+* **Customization:** Includes persistent toggles for Light/Dark mode and Alphabetical/Staggered QWERTY layouts. Touch/mouse-clicks outside the settings panel bounds naturally dismisses the modal backdrop.
 
 ## Methodology: Linked-Intent Development (LID)
 

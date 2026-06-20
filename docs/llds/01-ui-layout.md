@@ -25,8 +25,9 @@ The HTML will be contained within a single `index.html` file.
 ## 4. Layout Strategy (CSS)
 
 ### 4.1. Theming & CSS Variables
-* (Satisfies [REQ-STATE-002]) Use `:root` for Light Mode variables.
-* (Satisfies [REQ-STATE-002]) Use `[data-theme="dark"]` on the `body` to override variables for Dark Mode.
+* (Satisfies [REQ-STATE-002]) Use `:root` for Light Mode variables. Action buttons MUST use dark text color (`--btn-action-text: #121212`) for high contrast (at least 4.5:1 ratio).
+* (Satisfies [REQ-STATE-002]) Use `[data-theme="dark"]` on the `body` to override variables for Dark Mode. Action buttons MUST use white text (`--btn-action-text: #ffffff`).
+* **Backspace Theme Support:** The backspace button background (`--btn-backspace-bg`) MUST be `#ffa94d` in light mode and `#d9480f` (with white text) in dark mode to guarantee AAA/AA visual contrast ratios.
 
 ### 4.1.1 Header Layout
 * (Satisfies [REQ-SET-004]) `#app-header` MUST utilize `position: relative; display: flex; align-items: center; justify-content: center; min-height: 8vh;`
@@ -43,9 +44,12 @@ The HTML will be contained within a single `index.html` file.
 * (Satisfies [REQ-PRED-002]) The `#prediction-bar` MUST completely collapse when empty (`:empty { display: none; }`).
 * `#keyboard-section` MUST utilize `display: flex`, `flex-direction: column`, `flex-grow: 1`, and a strict `gap: 10px`.
 * (Satisfies [REQ-UI-001] [REQ-UI-002]) All buttons MUST have `touch-action: manipulation` and `user-select: none`.
+* **Disabled Button Style:** (Satisfies [REQ-ACC-001]) All buttons MUST have clear visual styling when disabled (`button:disabled { opacity: 0.4; cursor: not-allowed; }`) to provide instant feedback.
+* **Focus Outlines (Switch-Access Support):** (Satisfies [REQ-ACC-002]) High-contrast outlines using `button:focus-visible` (e.g. `outline: 4px solid #4dabf7; outline-offset: 2px;`) MUST be declared for accessibility switches and keyboard-only users, without interfering with touchscreen interactions.
 
 ### 4.2.1 Text Rendering & Cursor Simulation
 * (Satisfies [REQ-UI-002]) The `#display-area` MUST utilize `white-space: pre-wrap;` to ensure spaces are rendered.
+* **Aria Live Announcements:** (Satisfies [REQ-ACC-003]) The `#display-area` container MUST include `role="status"` and `aria-live="polite"` attributes to ensure typing updates are announced dynamically by screen readers.
 * The `#display-area` MUST feature a simulated, blinking cursor (`::after` pseudo-element with `content: '|';`).
 * **Defensive Alignment:** The cursor MUST inherit the exact `font-size` and `line-height` of the text, and utilize `vertical-align: baseline` or `vertical-align: bottom` to ensure it never drops below the standard letter baseline.
 * The cursor MUST blink continuously using a CSS `@keyframes` animation toggling opacity.
@@ -71,6 +75,7 @@ The HTML will be contained within a single `index.html` file.
 ### 4.5. Settings Panel
 * (Satisfies [REQ-STATE-003] [REQ-SET-001]) Utilize the native HTML `<dialog>` element. Center the content and use large touch targets for the toggles.
 * `div.setting-row` (Voice Selector: `<select id="select-voice"></select>`)
+* **Backdrop Interaction:** (Satisfies [REQ-ACC-004]) Tapping or clicking outside the boundaries of the `#settings-panel` dialog content (the dialog `::backdrop` area) MUST automatically close/dismiss the dialog.
 
 ## 5. Element Identifiers for JavaScript Bindings
 * `#display-text` 

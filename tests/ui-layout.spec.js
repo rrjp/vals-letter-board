@@ -443,6 +443,21 @@ test.describe('[REQ-UI-002] Display Area', () => {
     // LLD §4.2.1: defensive alignment — must use baseline or bottom
     expect(['baseline', 'bottom']).toContain(styles.verticalAlign);
   });
+
+  test('#display-area has accessibility attributes for screen readers', async ({ page }) => {
+    const role = await page.locator('#display-area').getAttribute('role');
+    const ariaLive = await page.locator('#display-area').getAttribute('aria-live');
+    expect(role).toBe('status');
+    expect(ariaLive).toBe('polite');
+  });
+
+  test('disabled buttons have reduced opacity for visual feedback', async ({ page }) => {
+    // Speak and Backspace are disabled initially
+    const speakOpacity = await page.locator('#btn-speak').evaluate(el => getComputedStyle(el).opacity);
+    const backspaceOpacity = await page.locator('#btn-backspace').evaluate(el => getComputedStyle(el).opacity);
+    expect(parseFloat(speakOpacity)).toBeCloseTo(0.4, 1);
+    expect(parseFloat(backspaceOpacity)).toBeCloseTo(0.4, 1);
+  });
 });
 
 test.describe('[REQ-UI-001] [REQ-PREF-002] [REQ-SET-003] Keyboard Grid Layout', () => {

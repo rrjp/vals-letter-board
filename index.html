@@ -20,6 +20,8 @@
       --btn-bg: #f0f0f0;
       --btn-clear-bg: #ff6b6b;
       --btn-speak-bg: #51cf66;
+      --btn-action-text: #121212;
+      --btn-backspace-bg: #ffa94d;
     }
 
     /* Dark Mode Override */
@@ -29,6 +31,8 @@
       --btn-bg: #333333;
       --btn-clear-bg: #8b0000;
       --btn-speak-bg: #006400;
+      --btn-action-text: #ffffff;
+      --btn-backspace-bg: #d9480f;
     }
 
     /* @spec [REQ-UI-002] LLD 01 §4.2: Viewport, Safety & Fluid Height
@@ -70,6 +74,16 @@
     button {
       touch-action: manipulation;
       user-select: none;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 4px solid #4dabf7;
+      outline-offset: 2px;
     }
 
     /* @spec [REQ-SET-004] LLD §4.1.1: Header Layout
@@ -268,11 +282,11 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      color: #ffffff;
+      color: var(--btn-action-text);
     }
 
     #btn-backspace {
-      background-color: #ffa94d;
+      background-color: var(--btn-backspace-bg);
     }
 
     #btn-clear {
@@ -360,7 +374,7 @@
 
     <!-- Output Section -->
     <section id="output-section">
-      <div id="display-area">
+      <div id="display-area" role="status" aria-live="polite">
         <span id="display-text"></span>
       </div>
       <div id="prediction-bar"></div>
@@ -439,6 +453,7 @@
     var btnBackspace = document.getElementById('btn-backspace');
     var btnClear = document.getElementById('btn-clear');
     var btnSpace = document.getElementById('btn-space');
+    var letterGrid = document.getElementById('letter-grid');
     var letterButtons = document.querySelectorAll('.letter-btn');
 
     // --- State ---
@@ -526,12 +541,13 @@
       });
     }
 
-    // --- Letter Input ---
-    letterButtons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
+    // --- Letter Input (Event Delegation) ---
+    letterGrid.addEventListener('click', function (e) {
+      var btn = e.target.closest('.letter-btn');
+      if (btn) {
         currentText += btn.textContent.toLowerCase();
         refreshDisplay();
-      });
+      }
     });
 
     // --- Space Input ---
@@ -559,7 +575,9 @@
       if (currentText.length === 0) return;
       try {
         learnWords();
-        window.speechSynthesis.cancel();
+        if (window.speechSynthesis.speaking !== false) {
+          window.speechSynthesis.cancel();
+        }
         var utterance = new SpeechSynthesisUtterance(currentText);
         // Assign saved voice preference (LLD 02 §3.4 / LLD 05)
         if (prefs.voiceURI) {
@@ -596,7 +614,6 @@
     var toggleTheme = document.getElementById('toggle-theme');
     var toggleLayout = document.getElementById('toggle-layout');
     var appTitle = document.getElementById('app-title');
-    var letterGrid = document.getElementById('letter-grid');
     var selectVoice = document.getElementById('select-voice');
 
     // --- Preferences ---
@@ -672,6 +689,16 @@
       settingsPanel.close();
     });
 
+    // Click outside settingsPanel content closes it
+    settingsPanel.addEventListener('click', function (e) {
+      var rect = settingsPanel.getBoundingClientRect();
+      var isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+                        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        settingsPanel.close();
+      }
+    });
+
     // --- User Name ---
     inputUserName.addEventListener('input', function () {
       prefs.userName = inputUserName.value || 'User';
@@ -701,7 +728,11 @@
       voices.forEach(function (v) {
         var opt = document.createElement('option');
         opt.value = v.voiceURI || v.name;
-        opt.textContent = v.name + ' (' + v.lang + ')';
+        var text = v.name + ' (' + v.lang + ')';
+        if (v.localService !== undefined) {
+          text += v.localService ? ' (offline)' : ' (cloud)';
+        }
+        opt.textContent = text;
         selectVoice.appendChild(opt);
       });
       // Restore saved voice or select via 4-step cascade
@@ -743,10 +774,15 @@
     }
 
     selectVoice.addEventListener('change', function () {
-      var idx = selectVoice.selectedIndex;
-      if (idx < 0) return;
+      var selectedValue = selectVoice.value;
       var voices = window.speechSynthesis.getVoices();
-      var selected = voices[idx];
+      var selected = null;
+      for (var i = 0; i < voices.length; i++) {
+        if ((voices[i].voiceURI || voices[i].name) === selectedValue) {
+          selected = voices[i];
+          break;
+        }
+      }
       if (selected) {
         prefs.voiceName = selected.name;
         prefs.voiceURI = selected.voiceURI;

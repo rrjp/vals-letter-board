@@ -20,14 +20,14 @@ test.describe('[REQ-PWA-001] PWA Manifest & Meta Tags', () => {
     const link = page.locator('link[rel="manifest"]');
     await expect(link).toHaveCount(1);
     const href = await link.getAttribute('href');
-    expect(href).toBe('manifest.json');
+    expect(href).toBe('./manifest.json');
   });
 
   test('<link rel="apple-touch-icon"> points to apple-touch-icon.png', async ({ page }) => {
     const link = page.locator('link[rel="apple-touch-icon"]');
     await expect(link).toHaveCount(1);
     const href = await link.getAttribute('href');
-    expect(href).toBe('apple-touch-icon.png');
+    expect(href).toBe('./apple-touch-icon.png');
   });
 });
 

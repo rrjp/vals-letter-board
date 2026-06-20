@@ -32,3 +32,10 @@
 * **Where** the word prediction module is active, **the system shall** [REQ-PRED-001] evaluate the current string being typed against the custom dictionary in LocalStorage.
 * **Where** the word prediction module is active, **the system shall** [REQ-PRED-002] display up to 5 matching word suggestions in a dedicated prediction bar.
 * **When** the user taps a suggested word, **the system shall** [REQ-PRED-003] replace the current partial string with the fully completed word and append a trailing space.
+
+## 6. Accessibility & Enhanced Interaction Requirements
+* [REQ-ACC-001] The system shall utilize clear visual states (reduced opacity) for disabled buttons to give immediate feedback to motor-impaired users.
+* [REQ-ACC-002] The system shall support high-contrast outline styling (`:focus-visible`) for all interactive elements to enable keyboard and assistive switch-access navigation without triggering virtual keyboards.
+* [REQ-ACC-003] The system shall declare the display area as an active accessibility live region using `role="status"` and `aria-live="polite"` to announce typing outputs to screen readers.
+* [REQ-ACC-004] The settings panel shall support backdrop clicking to close the modal, ensuring smooth dismissibility on touchscreen tablets.
+* [REQ-ACC-005] The Service Worker shall use a Stale-While-Revalidate caching pattern to allow silent, network-first background updates while maintaining absolute offline capability.

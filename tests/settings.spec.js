@@ -42,6 +42,24 @@ test.describe('[REQ-SET-001] Dialog Open & Close', () => {
     isOpen = await page.locator('#settings-panel').evaluate(el => el.open);
     expect(isOpen).toBe(false);
   });
+
+  test('clicking outside settings dialog dismisses it (backdrop click)', async ({ page }) => {
+    // Open settings dialog
+    await page.locator('#btn-settings').click();
+    let isOpen = await page.locator('#settings-panel').evaluate(el => el.open);
+    expect(isOpen).toBe(true);
+
+    // Get the bounding box of the dialog content
+    const bbox = await page.locator('#settings-panel').boundingBox();
+    expect(bbox).not.toBeNull();
+
+    // Click slightly to the left and top of the dialog box (backdrop area)
+    await page.mouse.click(bbox.x - 10, bbox.y - 10);
+
+    // Dialog should now be closed
+    isOpen = await page.locator('#settings-panel').evaluate(el => el.open);
+    expect(isOpen).toBe(false);
+  });
 });
 
 test.describe('[REQ-SET-004] User Name Personalization', () => {
