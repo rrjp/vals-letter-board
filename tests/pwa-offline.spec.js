@@ -23,11 +23,11 @@ test.describe('[REQ-PWA-001] PWA Manifest & Meta Tags', () => {
     expect(href).toBe('manifest.json');
   });
 
-  test('<link rel="apple-touch-icon"> points to icon-180.png', async ({ page }) => {
+  test('<link rel="apple-touch-icon"> points to apple-touch-icon.png', async ({ page }) => {
     const link = page.locator('link[rel="apple-touch-icon"]');
     await expect(link).toHaveCount(1);
     const href = await link.getAttribute('href');
-    expect(href).toBe('icon-180.png');
+    expect(href).toBe('apple-touch-icon.png');
   });
 });
 

@@ -4,11 +4,13 @@ var CACHE_NAME = 'comm-board-v1';
 
 // @spec [REQ-PWA-001] Core app shell to cache on install
 var CACHE_URLS = [
-  'index.html',
-  'manifest.json',
-  'icon-180.png',
-  'icon-192.png',
-  'icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.ico',
+  './apple-touch-icon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // @spec [REQ-PWA-001] Install: pre-cache the core app shell
