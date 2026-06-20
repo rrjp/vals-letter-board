@@ -19,6 +19,11 @@ Define the configuration required to make the application installable as a stand
 * **Install Event:** (Satisfies [REQ-PWA-001]) Upon installation, the Service Worker MUST aggressively cache the core application shell: `index.html`, `manifest.json`, and the icon PNGs.
 * **Activate Event:** (Satisfies [REQ-PWA-001]) Upon activation, the Service Worker MUST delete any previous, outdated cache versions.
 * **Fetch Event (Stale-While-Revalidate Strategy):** (Satisfies [REQ-ACC-005]) The Service Worker MUST intercept every network request and serve the cached file immediately for instantaneous, offline-capable loading. Simultaneously, it MUST fetch the file from the network in the background to update the cache for the next load, ensuring users receive updates without requiring manual cache busting.
+* **Automated Update Lifecycle:**
+    * **Service Worker:** The `sw.js` file MUST include a `message` event listener. If it receives a message with the data `'SKIP_WAITING'`, it MUST execute `self.skipWaiting()` to immediately activate.
+    * **Client Initialization:** The main application script MUST listen for the Service Worker's `updatefound` event. 
+    * When a new worker successfully reaches the `installed` state, the client MUST immediately send the `'SKIP_WAITING'` message to the new worker.
+    * The client MUST listen for the `controllerchange` event and execute a single `window.location.reload()` to instantly boot the new application version, utilizing a boolean flag to prevent infinite reload loops.
 
 ## 5. HTML Integration (`index.html`)
 * The `<head>` MUST contain an explicit relative link to the manifest: `<link rel="manifest" href="./manifest.json">`.

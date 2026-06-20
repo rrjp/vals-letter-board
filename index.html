@@ -815,9 +815,35 @@
     window.addEventListener('resize', forceLayoutReflow);
     window.addEventListener('orientationchange', forceLayoutReflow);
 
-    // --- Service Worker Registration (LLD §5) ---
+    // --- Service Worker Registration with Auto-Update (LLD §5) ---
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      var refreshing = false;
+
+      // Handle controller change to reload the page exactly once
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        reg.addEventListener('updatefound', function () {
+          var newWorker = reg.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', function () {
+            if (newWorker.state === 'installed') {
+              // Only trigger if there is an active controlling worker (this is an update, not first install)
+              if (navigator.serviceWorker.controller) {
+                newWorker.postMessage('SKIP_WAITING');
+              }
+            }
+          });
+        });
+      }).catch(function (err) {
+        // Silent catch for sw failures
+      });
     }
   </script>
 </body>
