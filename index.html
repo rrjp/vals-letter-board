@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>Val's Letter Board</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <style>
+    /* @spec [REQ-STATE-002] LLD 01 §4.1: Theming & CSS Variables
+       ============================================================ */
+
+    /* Light Mode (Default) */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --btn-bg: #f0f0f0;
+      --btn-clear-bg: #ff6b6b;
+      --btn-speak-bg: #51cf66;
+    }
+
+    /* Dark Mode Override */
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --btn-bg: #333333;
+      --btn-clear-bg: #8b0000;
+      --btn-speak-bg: #006400;
+    }
+
+    /* @spec [REQ-UI-002] LLD 01 §4.2: Viewport, Safety & Fluid Height
+       ============================================================ */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    /* LLD §4.2: Wipe browser defaults on all structural tags */
+    section, header, div {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      margin: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    #app-container {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: var(--bg-color);
+    }
+
+    /* All buttons: safety styles */
+    button {
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    /* @spec [REQ-SET-004] LLD §4.1.1: Header Layout
+       ============================================================ */
+    #app-header {
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 8vh;
+      background-color: var(--bg-color);
+      border-bottom: 1px solid var(--btn-bg);
+    }
+
+    #app-title {
+      margin: 0;
+      font-family: "Georgia", "Garamond", "Times New Roman", serif;
+      font-weight: normal;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--text-color);
+    }
+
+    #btn-settings {
+      position: absolute;
+      right: 12px;
+      font-size: 1.2rem;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       Output Section — LLD 01 §4.2: display-area min-height 24vh
+       ============================================================ */
+
+    #output-section {
+      flex-shrink: 0;
+      background-color: var(--bg-color);
+    }
+
+    #display-area {
+      height: 24vh;
+      box-sizing: border-box;
+      padding: 2vh 2vw;
+      background-color: var(--btn-bg);
+      border-radius: 8px;
+      font-size: 1.5rem;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    #display-text {
+      color: var(--text-color);
+      min-height: 1.5em;
+    }
+
+    /* LLD §4.2.1: Blinking pipe cursor via ::after */
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+
+    #display-area::after {
+      content: '|';
+      color: var(--text-color);
+      font-size: inherit;
+      line-height: inherit;
+      vertical-align: baseline;
+      animation: blink-cursor 1s step-end infinite;
+    }
+
+    #prediction-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* LLD §4.2: Collapse entirely when no prediction buttons */
+    #prediction-bar:empty {
+      display: none;
+    }
+
+    /* LLD 04 §6: Prediction buttons — accessible touch targets */
+    .prediction-btn {
+      min-height: 8vh;
+      padding: 0 12px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       Keyboard Section — LLD 01 §4.2: flex column, flex-grow: 1
+       ============================================================ */
+
+    #keyboard-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       LLD 01 §4.3: Keyboard Grid
+       ============================================================ */
+
+    #letter-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    /* QWERTY Layout variation — LLD §4.3: 20-col staggered grid */
+    #letter-grid.layout-qwerty {
+      grid-template-columns: repeat(20, 1fr);
+    }
+
+    #letter-grid.layout-qwerty .letter-btn {
+      grid-column: span 2;
+    }
+
+    /* Stagger row 2: 'a' starts at column 2 */
+    #letter-grid.layout-qwerty .letter-btn:nth-child(11) {
+      grid-column: 2 / span 2;
+    }
+
+    /* Stagger row 3: 'z' starts at column 4 */
+    #letter-grid.layout-qwerty .letter-btn:nth-child(20) {
+      grid-column: 4 / span 2;
+    }
+
+    /* Letter buttons stretch to fill grid cells entirely (§4.3) */
+    .letter-btn {
+      font-size: 1.3rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ============================================================
+       LLD 01 §4.4: Space Bar
+       ============================================================ */
+
+    #btn-space {
+      width: 100%;
+      height: 8vh;
+      flex-shrink: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       LLD 01 §4.4: Action Grid
+       ============================================================ */
+
+    #action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      height: 8vh;
+      flex-shrink: 0;
+    }
+
+    #action-grid button {
+      min-height: 8vh;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    #btn-backspace {
+      background-color: #ffa94d;
+    }
+
+    #btn-clear {
+      background-color: var(--btn-clear-bg);
+    }
+
+    #btn-speak {
+      background-color: var(--btn-speak-bg);
+    }
+
+    /* ============================================================
+       LLD 01 §4.5: Settings Panel (dialog)
+       ============================================================ */
+
+    #settings-panel {
+      border: none;
+      border-radius: 16px;
+      padding: 24px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      max-width: 90vw;
+      width: 400px;
+    }
+
+    #settings-panel::backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+      min-height: 8vh;
+    }
+
+    .setting-row input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    #input-user-name {
+      font-size: 1rem;
+      padding: 8px 12px;
+      border: 1px solid var(--btn-bg);
+      border-radius: 8px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 40px;
+    }
+
+    #btn-close-settings {
+      min-height: 8vh;
+      width: 100%;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main id="app-container">
+    <!-- Header -->
+    <header id="app-header">
+      <h1 id="app-title">Val's Letter Board</h1>
+      <button id="btn-settings" aria-label="Open Settings">⚙️ Settings</button>
+    </header>
+
+    <!-- Output Section -->
+    <section id="output-section">
+      <div id="display-area">
+        <span id="display-text"></span>
+      </div>
+      <div id="prediction-bar"></div>
+    </section>
+
+    <!-- Keyboard Section -->
+    <section id="keyboard-section">
+      <div id="letter-grid">
+        <button class="letter-btn" data-letter="a">A</button>
+        <button class="letter-btn" data-letter="b">B</button>
+        <button class="letter-btn" data-letter="c">C</button>
+        <button class="letter-btn" data-letter="d">D</button>
+        <button class="letter-btn" data-letter="e">E</button>
+        <button class="letter-btn" data-letter="f">F</button>
+        <button class="letter-btn" data-letter="g">G</button>
+        <button class="letter-btn" data-letter="h">H</button>
+        <button class="letter-btn" data-letter="i">I</button>
+        <button class="letter-btn" data-letter="j">J</button>
+        <button class="letter-btn" data-letter="k">K</button>
+        <button class="letter-btn" data-letter="l">L</button>
+        <button class="letter-btn" data-letter="m">M</button>
+        <button class="letter-btn" data-letter="n">N</button>
+        <button class="letter-btn" data-letter="o">O</button>
+        <button class="letter-btn" data-letter="p">P</button>
+        <button class="letter-btn" data-letter="q">Q</button>
+        <button class="letter-btn" data-letter="r">R</button>
+        <button class="letter-btn" data-letter="s">S</button>
+        <button class="letter-btn" data-letter="t">T</button>
+        <button class="letter-btn" data-letter="u">U</button>
+        <button class="letter-btn" data-letter="v">V</button>
+        <button class="letter-btn" data-letter="w">W</button>
+        <button class="letter-btn" data-letter="x">X</button>
+        <button class="letter-btn" data-letter="y">Y</button>
+        <button class="letter-btn" data-letter="z">Z</button>
+      </div>
+
+      <button id="btn-space" aria-label="Space">␣ Space</button>
+
+      <div id="action-grid">
+        <button id="btn-backspace" aria-label="Backspace">⌫ Backspace</button>
+        <button id="btn-clear" aria-label="Clear">✕ Clear</button>
+        <button id="btn-speak" aria-label="Speak">🔊 Speak</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Settings Panel Dialog -->
+  <dialog id="settings-panel">
+    <div class="setting-row">
+      <label for="input-user-name">Your Name</label>
+      <input type="text" id="input-user-name" placeholder="Enter name">
+    </div>
+    <div class="setting-row">
+      <label for="toggle-theme">Dark Mode</label>
+      <input type="checkbox" id="toggle-theme">
+    </div>
+    <div class="setting-row">
+      <label for="toggle-layout">QWERTY Layout</label>
+      <input type="checkbox" id="toggle-layout">
+    </div>
+    <button id="btn-close-settings">Close</button>
+  </dialog>
+
+  <script>
+    // ============================================================
+    // LLD 02: Web Speech API & Input State Logic
+    // ============================================================
+
+    // --- DOM References ---
+    var displayText = document.getElementById('display-text');
+    var btnSpeak = document.getElementById('btn-speak');
+    var btnBackspace = document.getElementById('btn-backspace');
+    var btnClear = document.getElementById('btn-clear');
+    var btnSpace = document.getElementById('btn-space');
+    var letterButtons = document.querySelectorAll('.letter-btn');
+
+    // --- State ---
+    var currentText = '';
+
+    // @spec [REQ-DICT-001] LLD 04: Dictionary & Prediction ---
+    var predictionBar = document.getElementById('prediction-bar');
+    var customDictionary = [];
+    try {
+      var stored = localStorage.getItem('comm-board-dict');
+      customDictionary = stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      customDictionary = [];
+    }
+    if (customDictionary.length === 0) {
+      customDictionary = ['yes', 'no', 'please', 'thanks'];
+      localStorage.setItem('comm-board-dict', JSON.stringify(customDictionary));
+    }
+
+    // --- Disable State Helper ---
+    function updateButtonStates() {
+      var empty = (currentText.length === 0);
+      btnSpeak.disabled = empty;
+      btnBackspace.disabled = empty;
+    }
+
+    // --- Display Update ---
+    function refreshDisplay() {
+      displayText.textContent = currentText;
+      updateButtonStates();
+      runPrediction();
+    }
+
+    // @spec [REQ-DICT-002] LLD 04 §4: Word Learning (triggered by Speak) ---
+    function learnWords() {
+      if (currentText.length === 0) return;
+      var words = currentText.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(Boolean);
+      var changed = false;
+      words.forEach(function (word) {
+        if (customDictionary.indexOf(word) === -1) {
+          customDictionary.push(word);
+          changed = true;
+        }
+      });
+      if (changed) {
+        localStorage.setItem('comm-board-dict', JSON.stringify(customDictionary));
+      }
+    }
+
+    // @spec [REQ-PRED-001] [REQ-PRED-002] LLD 04 §5: Prediction Engine ---
+    function runPrediction() {
+      // Clear existing predictions
+      predictionBar.innerHTML = '';
+
+      // Find current word (text after last space)
+      var lastSpace = currentText.lastIndexOf(' ');
+      var currentWord = lastSpace === -1 ? currentText : currentText.slice(lastSpace + 1);
+
+      // If current word is empty, no predictions
+      if (currentWord.length === 0) return;
+
+      // Filter dictionary for words starting with current word
+      var matches = customDictionary.filter(function (word) {
+        return word.indexOf(currentWord) === 0;
+      });
+
+      // Limit to 5
+      matches = matches.slice(0, 5);
+
+      // Render prediction buttons
+      matches.forEach(function (word) {
+        var btn = document.createElement('button');
+        btn.textContent = word;
+        btn.className = 'prediction-btn';
+        btn.addEventListener('click', function () {
+          // Replace the partial current word with the full word + space
+          if (lastSpace === -1) {
+            currentText = word + ' ';
+          } else {
+            currentText = currentText.slice(0, lastSpace + 1) + word + ' ';
+          }
+          refreshDisplay();
+        });
+        predictionBar.appendChild(btn);
+      });
+    }
+
+    // --- Letter Input ---
+    letterButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        currentText += btn.textContent.toLowerCase();
+        refreshDisplay();
+      });
+    });
+
+    // --- Space Input ---
+    btnSpace.addEventListener('click', function () {
+      currentText += ' ';
+      refreshDisplay();
+    });
+
+    // --- Backspace ---
+    btnBackspace.addEventListener('click', function () {
+      if (currentText.length > 0) {
+        currentText = currentText.slice(0, -1);
+        refreshDisplay();
+      }
+    });
+
+    // --- Clear ---
+    btnClear.addEventListener('click', function () {
+      currentText = '';
+      refreshDisplay();
+    });
+
+    // --- Speak ---
+    btnSpeak.addEventListener('click', function () {
+      if (currentText.length === 0) return;
+      try {
+        learnWords();
+        window.speechSynthesis.cancel();
+        var utterance = new SpeechSynthesisUtterance(currentText);
+        // LLD §3.4: blur on speech completion to release focus trap
+        utterance.onend = function () {
+          if (document.activeElement) {
+            document.activeElement.blur();
+          }
+        };
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        // LLD §3.4: silent failure — do not crash
+      }
+    });
+
+    // --- Initial State ---
+    updateButtonStates();
+
+    // ============================================================
+    // @spec [REQ-PREF-001] LLD 05: Settings State & Personalization
+    // ============================================================
+
+    var settingsPanel = document.getElementById('settings-panel');
+    var btnCloseSettings = document.getElementById('btn-close-settings');
+    var inputUserName = document.getElementById('input-user-name');
+    var toggleTheme = document.getElementById('toggle-theme');
+    var toggleLayout = document.getElementById('toggle-layout');
+    var appTitle = document.getElementById('app-title');
+    var letterGrid = document.getElementById('letter-grid');
+
+    // --- Preferences ---
+    var prefs = { userName: 'User', theme: 'light', layout: 'alpha' };
+    try {
+      var storedPrefs = localStorage.getItem('comm-board-prefs');
+      if (storedPrefs) {
+        var parsed = JSON.parse(storedPrefs);
+        if (parsed.userName) prefs.userName = parsed.userName;
+        if (parsed.theme) prefs.theme = parsed.theme;
+        if (parsed.layout) prefs.layout = parsed.layout;
+      }
+    } catch (e) {}
+
+    function savePrefs() {
+      localStorage.setItem('comm-board-prefs', JSON.stringify(prefs));
+    }
+
+    function applyPrefs() {
+      // Title
+      appTitle.textContent = prefs.userName + "'s Letter Board";
+
+      // Theme
+      if (prefs.theme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+      } else {
+        document.body.removeAttribute('data-theme');
+      }
+
+      // Layout
+      if (prefs.layout === 'qwerty') {
+        letterGrid.classList.add('layout-qwerty');
+      } else {
+        letterGrid.classList.remove('layout-qwerty');
+      }
+      reorderLetters(prefs.layout);
+
+      // Sync checkboxes
+      toggleTheme.checked = (prefs.theme === 'dark');
+      toggleLayout.checked = (prefs.layout === 'qwerty');
+    }
+
+    // --- QWERTY DOM Reordering ---
+    var ALPHA_ORDER = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    var QWERTY_ORDER = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+
+    function reorderLetters(layout) {
+      var order = layout === 'qwerty' ? QWERTY_ORDER : ALPHA_ORDER;
+      var buttons = letterGrid.querySelectorAll('.letter-btn');
+      // Build a map: data-letter → element
+      var map = {};
+      buttons.forEach(function (btn) {
+        map[btn.getAttribute('data-letter')] = btn;
+      });
+      // Remove all, then append in target order
+      buttons.forEach(function (btn) { btn.remove(); });
+      order.forEach(function (letter) {
+        if (map[letter]) {
+          letterGrid.appendChild(map[letter]);
+        }
+      });
+    }
+
+    // --- Dialog Open ---
+    document.getElementById('btn-settings').addEventListener('click', function () {
+      settingsPanel.showModal();
+    });
+
+    // --- Dialog Close ---
+    btnCloseSettings.addEventListener('click', function () {
+      settingsPanel.close();
+    });
+
+    // --- User Name ---
+    inputUserName.addEventListener('input', function () {
+      prefs.userName = inputUserName.value || 'User';
+      savePrefs();
+      applyPrefs();
+    });
+
+    // --- Theme Toggle ---
+    toggleTheme.addEventListener('change', function () {
+      prefs.theme = toggleTheme.checked ? 'dark' : 'light';
+      savePrefs();
+      applyPrefs();
+    });
+
+    // --- Layout Toggle ---
+    toggleLayout.addEventListener('change', function () {
+      prefs.layout = toggleLayout.checked ? 'qwerty' : 'alpha';
+      savePrefs();
+      applyPrefs();
+    });
+
+    // --- Apply on load ---
+    applyPrefs();
+    // Set initial input value (only on load, not re-synced on every apply)
+    inputUserName.value = prefs.userName;
+
+    // --- Service Worker Registration (LLD §5) ---
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
