@@ -2,7 +2,7 @@
 
 An offline-first, Progressive Web App (PWA) communication board featuring local text-to-speech, dynamic word prediction, and highly accessible touch targets. 
 
-Designed specifically for the tablets, this application requires zero network connectivity once installed, prioritizing speed, reliability, and privacy.
+Designed specifically for tablets, this application requires zero network connectivity once installed, prioritizing speed, reliability, and privacy.
 
 ## Table of Contents
 - [Background & Inspiration](#background--inspiration)
