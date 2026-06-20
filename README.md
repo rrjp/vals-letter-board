@@ -39,6 +39,8 @@ No code was manually "hacked" or patched. Instead, the application was built by 
 
 This methodology resulted in highly defensive CSS, zero reliance on external UI frameworks, and mathematically verifiable layout constraints.
 
+I did not use the official LID skills though so anything that doesn't correspond to the official LID methodology is an oversight on my side.
+
 ## Installation & Cross-Platform Support
 
 Because this application is built as a Progressive Web App (PWA), it bypasses traditional app stores completely. It can be installed directly from the browser onto almost any modern operating system (iOS, Android, Windows, Mac, and Linux) and will run as a standalone, offline-capable native application.
