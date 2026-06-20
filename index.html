@@ -324,6 +324,17 @@
       min-height: 40px;
     }
 
+    #select-voice {
+      font-size: 1rem;
+      padding: 8px 12px;
+      border: 1px solid var(--btn-bg);
+      border-radius: 8px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 40px;
+      min-width: 150px;
+    }
+
     #btn-close-settings {
       min-height: 8vh;
       width: 100%;
@@ -399,6 +410,10 @@
     <div class="setting-row">
       <label for="input-user-name">Your Name</label>
       <input type="text" id="input-user-name" placeholder="Enter name">
+    </div>
+    <div class="setting-row">
+      <label for="select-voice">Voice</label>
+      <select id="select-voice"></select>
     </div>
     <div class="setting-row">
       <label for="toggle-theme">Dark Mode</label>
@@ -544,6 +559,16 @@
         learnWords();
         window.speechSynthesis.cancel();
         var utterance = new SpeechSynthesisUtterance(currentText);
+        // Assign saved voice preference (LLD 02 §3.4 / LLD 05)
+        if (prefs.voiceURI) {
+          var voices = window.speechSynthesis.getVoices();
+          for (var vi = 0; vi < voices.length; vi++) {
+            if (voices[vi].voiceURI === prefs.voiceURI || voices[vi].name === prefs.voiceName) {
+              utterance.voice = voices[vi];
+              break;
+            }
+          }
+        }
         // LLD §3.4: blur on speech completion to release focus trap
         utterance.onend = function () {
           if (document.activeElement) {
@@ -570,9 +595,10 @@
     var toggleLayout = document.getElementById('toggle-layout');
     var appTitle = document.getElementById('app-title');
     var letterGrid = document.getElementById('letter-grid');
+    var selectVoice = document.getElementById('select-voice');
 
     // --- Preferences ---
-    var prefs = { userName: 'User', theme: 'light', layout: 'alpha' };
+    var prefs = { userName: 'User', theme: 'light', layout: 'alpha', voiceName: '', voiceURI: '' };
     try {
       var storedPrefs = localStorage.getItem('comm-board-prefs');
       if (storedPrefs) {
@@ -580,6 +606,8 @@
         if (parsed.userName) prefs.userName = parsed.userName;
         if (parsed.theme) prefs.theme = parsed.theme;
         if (parsed.layout) prefs.layout = parsed.layout;
+        if (parsed.voiceName) prefs.voiceName = parsed.voiceName;
+        if (parsed.voiceURI) prefs.voiceURI = parsed.voiceURI;
       }
     } catch (e) {}
 
@@ -663,10 +691,76 @@
       applyPrefs();
     });
 
+    // --- Voice Selection (LLD 05) ---
+    function populateVoices() {
+      var voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+      selectVoice.innerHTML = '';
+      voices.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v.voiceURI || v.name;
+        opt.textContent = v.name + ' (' + v.lang + ')';
+        selectVoice.appendChild(opt);
+      });
+      // Restore saved voice or select via 4-step cascade
+      // Use setTimeout to yield to browser render cycle so <option> elements exist
+      var targetValue = null;
+      if (prefs.voiceURI) {
+        // Step 1: User preference
+        targetValue = prefs.voiceURI;
+      } else {
+        var selected = null;
+        // Step 2: Browser language match (base language code only)
+        var langBase = (navigator.language || '').substring(0, 2).toLowerCase();
+        for (var vi2 = 0; vi2 < voices.length; vi2++) {
+          var voiceBase = (voices[vi2].lang || '').substring(0, 2).toLowerCase();
+          if (voiceBase === langBase) {
+            selected = voices[vi2];
+            break;
+          }
+        }
+        // Step 3: System default
+        if (!selected) {
+          for (var vi = 0; vi < voices.length; vi++) {
+            if (voices[vi].default) { selected = voices[vi]; break; }
+          }
+        }
+        // Step 4: First voice in array
+        if (!selected && voices.length > 0) {
+          selected = voices[0];
+        }
+        if (selected) {
+          targetValue = selected.voiceURI || selected.name;
+        }
+      }
+      if (targetValue) {
+        setTimeout(function () {
+          selectVoice.value = targetValue;
+        }, 0);
+      }
+    }
+
+    selectVoice.addEventListener('change', function () {
+      var idx = selectVoice.selectedIndex;
+      if (idx < 0) return;
+      var voices = window.speechSynthesis.getVoices();
+      var selected = voices[idx];
+      if (selected) {
+        prefs.voiceName = selected.name;
+        prefs.voiceURI = selected.voiceURI;
+        savePrefs();
+      }
+    });
+
     // --- Apply on load ---
     applyPrefs();
     // Set initial input value (only on load, not re-synced on every apply)
     inputUserName.value = prefs.userName;
+    // Populate voice list (may need to wait for voiceschanged event)
+    populateVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
 
     // --- Service Worker Registration (LLD §5) ---
     if ('serviceWorker' in navigator) {

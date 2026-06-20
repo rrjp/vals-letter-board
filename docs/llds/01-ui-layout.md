@@ -70,6 +70,7 @@ The HTML will be contained within a single `index.html` file.
 
 ### 4.5. Settings Panel
 * (Satisfies [REQ-STATE-003] [REQ-SET-001]) Utilize the native HTML `<dialog>` element. Center the content and use large touch targets for the toggles.
+* `div.setting-row` (Voice Selector: `<select id="select-voice"></select>`)
 
 ## 5. Element Identifiers for JavaScript Bindings
 * `#display-text` 

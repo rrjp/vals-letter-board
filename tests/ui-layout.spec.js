@@ -113,9 +113,9 @@ test.describe('[REQ-UI-002] DOM Structure', () => {
     const btnClose = dialog.locator('#btn-close-settings');
     await expect(btnClose).toHaveCount(1);
 
-    // Three setting rows
+    // Four setting rows
     const settingRows = dialog.locator('.setting-row');
-    await expect(settingRows).toHaveCount(3);
+    await expect(settingRows).toHaveCount(4);
   });
 
   test('display text element exists', async ({ page }) => {

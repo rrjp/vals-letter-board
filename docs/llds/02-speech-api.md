@@ -31,3 +31,5 @@ Define the Vanilla JavaScript logic required to handle user input (letters, spac
 * **Execution:** (Satisfies [REQ-TTS-001]) The system MUST call `window.speechSynthesis.speak(utterance)`.
 * **Focus Management (Defensive):** The system MUST attach an `onend` event listener to the `SpeechSynthesisUtterance`. When the speech completes, the system MUST call `blur()` on `document.activeElement` (or specifically `#btn-speak`) to release system focus and prevent accidental re-triggering via hardware keyboards or assistive switches.
 * **Silent Failure:** (Satisfies [REQ-TTS-002]) If `window.speechSynthesis` is entirely unavailable, the function must catch the error or `return` silently.
+* Before calling `speechSynthesis.speak()`, the system MUST check LocalStorage for a saved voice preference.
+* If a preference exists, the system MUST find the matching voice object from `getVoices()` and assign it to the `SpeechSynthesisUtterance.voice` property.
