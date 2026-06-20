@@ -14,7 +14,7 @@ Designed specifically for tablets, this application requires zero network connec
 
 ## Background & Inspiration
 
-[Insert Backstory Here: Explain the motivation for the project, the specific needs it addresses, and the journey of building it.]
+In October 2025 my wife suffered a stroke and is relearning how to speak. Day to day she uses a paper letter board. I looked into other letter board apps but they either cost money (in some cases a subscription) or were free or open source but didn't work at all or were full of bugs. I've been writing software since the late 1970s so I figured I'd take a crack at it. I also wanted to learn some spec driven development (SDD) using the linked intent development strategy and figured this would be a good small project to try it on. I wanted the app to be able to work on a tablet totally offline so that it could be used in places where the patient didn't have WiFi like a doctors office.  
 
 ## Features
 
@@ -44,26 +44,24 @@ This methodology resulted in highly defensive CSS, zero reliance on external UI 
 Because this application is built as a Progressive Web App (PWA), it bypasses traditional app stores completely. It can be installed directly from the browser onto almost any modern operating system (iOS, Android, Windows, Mac, and Linux) and will run as a standalone, offline-capable native application.
 
 ### Apple (iPad / iPhone)
-1. Open Safari and navigate to the securely hosted application URL.
+1. Open Safari and navigate to the securely hosted [application URL](https://rrjp.github.io/vals-letter-board/).
 2. Tap the **Share** button (the square with an arrow pointing up) in the Safari toolbar.
 3. Scroll down and tap **Add to Home Screen**.
 4. Confirm the addition. 
 
 ### Android (Tablets / Phones)
-1. Open Google Chrome and navigate to the application URL.
+1. Open Google Chrome and navigate to the [application URL](https://rrjp.github.io/vals-letter-board/).
 2. A banner may appear at the bottom of the screen prompting you to **"Add Valerie's Letter Board to Home screen"**. 
 3. If the banner does not appear, tap the three-dot menu icon in the top right corner.
 4. Select **Install app** (or "Add to Home screen") and confirm.
 
 ### Desktop (Windows / Mac / Linux)
-1. Open a Chromium-based browser (Google Chrome, Microsoft Edge, Brave) and navigate to the application URL.
+1. Open a Chromium-based browser (Google Chrome, Microsoft Edge, Brave) and navigate to the [application URL](https://rrjp.github.io/vals-letter-board/).
 2. Look at the far right side of the URL address bar.
 3. Click the **Install** icon (it typically looks like a computer monitor with a downward arrow).
 4. The application will install and immediately open in a standalone window, adding an icon to your desktop or application launcher.
 
 *Note: Once installed on any device, the app will boot into a full-screen or windowed mode without browser chrome. You can safely disable Wi-Fi/enable Airplane Mode to verify the offline Service Worker.*
-
-[Insert Screenshots Here: Safari Share Sheet -> Add to Home Screen -> Final Installed Icon]
 
 ## Local Development & Testing
 
