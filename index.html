@@ -49,7 +49,7 @@
     }
 
     html, body {
-      height: 100vh;
+      height: 100dvh;
       width: 100vw;
       margin: 0;
       overflow: hidden;
@@ -59,7 +59,7 @@
     }
 
     #app-container {
-      height: 100vh;
+      height: 100dvh;
       width: 100vw;
       overflow: hidden;
       box-sizing: border-box;
@@ -799,6 +799,21 @@
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = populateVoices;
     }
+
+    // --- Viewport Orientation Reflow Handling ---
+    function forceLayoutReflow() {
+      var container = document.getElementById('app-container');
+      if (container) {
+        // Accessing offsetHeight forces immediate layout calculation
+        var dummy = container.offsetHeight;
+        // Temporarily change display mode, force layout calculation, and restore
+        container.style.display = 'none';
+        var reflow = container.offsetHeight;
+        container.style.display = 'flex';
+      }
+    }
+    window.addEventListener('resize', forceLayoutReflow);
+    window.addEventListener('orientationchange', forceLayoutReflow);
 
     // --- Service Worker Registration (LLD §5) ---
     if ('serviceWorker' in navigator) {

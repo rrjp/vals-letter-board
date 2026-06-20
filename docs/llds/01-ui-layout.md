@@ -46,6 +46,8 @@ The HTML will be contained within a single `index.html` file.
 * (Satisfies [REQ-UI-001] [REQ-UI-002]) All buttons MUST have `touch-action: manipulation` and `user-select: none`.
 * **Disabled Button Style:** (Satisfies [REQ-ACC-001]) All buttons MUST have clear visual styling when disabled (`button:disabled { opacity: 0.4; cursor: not-allowed; }`) to provide instant feedback.
 * **Focus Outlines (Switch-Access Support):** (Satisfies [REQ-ACC-002]) High-contrast outlines using `button:focus-visible` (e.g. `outline: 4px solid #4dabf7; outline-offset: 2px;`) MUST be declared for accessibility switches and keyboard-only users, without interfering with touchscreen interactions.
+* **Viewport Handling:** * The root application container MUST use `height: 100dvh` (Dynamic Viewport Height) to ensure accurate sizing on mobile devices during orientation changes, avoiding the legacy `100vh` unit.
+  * The system MUST listen for `resize` and `orientationchange` events and programmatically trigger a layout reflow to prevent rendering engine lag when rotating from portrait to landscape.
 
 ### 4.2.1 Text Rendering & Cursor Simulation
 * (Satisfies [REQ-UI-002]) The `#display-area` MUST utilize `white-space: pre-wrap;` to ensure spaces are rendered.

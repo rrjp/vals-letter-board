@@ -204,7 +204,7 @@ test.describe('[REQ-UI-002] CSS Layout & Viewport', () => {
     await page.goto('/');
   });
 
-  test('body has height: 100vh, width: 100vw, margin: 0, overflow: hidden', async ({ page }) => {
+  test('body has height: 100dvh, width: 100vw, margin: 0, overflow: hidden', async ({ page }) => {
     const bodyStyles = await page.locator('body').evaluate(el => {
       const s = getComputedStyle(el);
       return {
@@ -227,7 +227,7 @@ test.describe('[REQ-UI-002] CSS Layout & Viewport', () => {
     expect(bodyStyles.overflow).toBe('hidden');
   });
 
-  test('#app-container has height: 100vh, width: 100vw, overflow: hidden', async ({ page }) => {
+  test('#app-container has height: 100dvh, width: 100vw, overflow: hidden', async ({ page }) => {
     const styles = await page.locator('#app-container').evaluate(el => {
       const s = getComputedStyle(el);
       return { height: s.height, width: s.width, overflow: s.overflow };
@@ -346,7 +346,7 @@ test.describe('[REQ-UI-002] Flexbox Fluid Layout (Whitespace Elimination)', () =
     expect(Math.abs(gap - 10)).toBeLessThanOrEqual(1);
   });
 
-  test('#app-container fills the entire viewport (children + gaps + padding = 100vh)', async ({ page }) => {
+  test('#app-container fills the entire viewport (children + gaps + padding = 100dvh)', async ({ page }) => {
     // With box-sizing: border-box, padding: 10px, and gap: 10px,
     // childrenHeights + gaps = contentHeight, and contentHeight + 2×padding = containerHeight
     const container = await page.locator('#app-container').evaluate(el => {
