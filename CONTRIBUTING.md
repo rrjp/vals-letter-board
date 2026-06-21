@@ -2,7 +2,9 @@
 
 Thank you for your interest in contributing to Val's Letter Board! This project is an offline-first, highly accessible assistive communication board built using Progressive Web App (PWA) standards. 
 
-To maintain the absolute highest quality of software, accessibility, and reliability, we follow a strict development methodology. Please review these guidelines before making any changes.
+To maintain the absolute highest quality of software, accessibility, and reliability, we follow a strict development methodology. Please review these guidelines before making any changes. 
+
+In addition I have a very demanding day job and little free time. At least for now the product has all of the functionality I need it to have so I'm going to need some convincing for justifying changes. Also I've been a software professional for over 30 years so please don't waste my time with AI slop PRs. 
 
 ---
 
